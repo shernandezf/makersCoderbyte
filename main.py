@@ -9,7 +9,7 @@ import os
 from datetime import datetime
 import urllib
 import pandas as pd
-from requests import delete
+from requests import delete, request
 
 app = Flask(__name__)
 
@@ -74,6 +74,8 @@ class Photo(Resource):
     @marshal_with(resource_fields)
     def get(self,photo_id):
         if photo_id==0:
+            ROWS_PER_PAGE=5
+            #result=PhotoModel.query.paginate(page=5, per_page=ROWS_PER_PAGE)
             result=PhotoModel.query.all()
         else:
             result=PhotoModel.query.filter_by(id=photo_id).first()
