@@ -1,6 +1,7 @@
 from email import message
 import sqlite3
-from flask import Flask
+from turtle import title
+from flask import Flask, request
 from flask_restful import Api, Resource, abort, reqparse, fields, marshal_with
 from flask_sqlalchemy import SQLAlchemy
 
@@ -9,7 +10,6 @@ import os
 from datetime import datetime
 import urllib
 import pandas as pd
-from requests import delete, request
 
 app = Flask(__name__)
 
@@ -75,8 +75,24 @@ class Photo(Resource):
     def get(self,photo_id):
         if photo_id==0:
             ROWS_PER_PAGE=5
-            #result=PhotoModel.query.paginate(page=5, per_page=ROWS_PER_PAGE)
-            result=PhotoModel.query.all()
+            args = request.args
+            args.to_dict()
+            args.get("filter", default="", type=str)
+            args.get("filter_value", default="", type=str)
+            if args.get("filter") is not None or args.get("filter_value") is not None:
+                expresion='%'+str(args.get("filter_value"))+'%'
+                if args.get("filter")=='id':
+                    result=PhotoModel.query.filter(PhotoModel.id.ilike(expresion)).all()
+                elif args.get("filter")=='explanation':
+                    result=PhotoModel.query.filter(PhotoModel.explanation.ilike(expresion)).all()
+                elif args.get("filter")=='hdurl':
+                    result=PhotoModel.query.filter(PhotoModel.hdurl.ilike(expresion)).all()
+                elif args.get("filter")=='title':
+                    result=PhotoModel.query.filter(PhotoModel.title.ilike(expresion)).all()
+                elif args.get("filter")=='url':
+                    result=PhotoModel.query.filter(PhotoModel.url.ilike(expresion)).all()
+            else:
+                result=PhotoModel.query.all()
         else:
             result=PhotoModel.query.filter_by(id=photo_id).first()
         if not result:
