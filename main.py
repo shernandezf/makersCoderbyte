@@ -59,14 +59,31 @@ resource_fields={
 }
 
 class Photo(Resource):
-    
+    @marshal_with(resource_fields)
+    def post(self,photo_id):
+        if photo_id==0:
+            abort(400,message="El id 0, está reservado, porfavor usar otro")
+        check=PhotoModel.query.filter_by(id=photo_id).first()
+        if check:
+            abort(409, message="Ya existe esa foto con ese id")
+        body=photo_put_args.parse_args()
+        photo=PhotoModel(id=photo_id,explanation=body["explanation"],hdurl=body["hdurl"],title=body["title"],url=body["url"])
+        db.session.add(photo)
+        db.session.commit()
+        return photo
     @marshal_with(resource_fields)
     def get(self,photo_id):
-        result=PhotoModel.query.filter_by(id=photo_id).first()
+        if photo_id==0:
+            result=PhotoModel.query.all()
+        else:
+            result=PhotoModel.query.filter_by(id=photo_id).first()
+        if not result:
+            abort(404,message="La imagen no existe.")
         return result
     @marshal_with(resource_fields)
     def put(self, photo_id,fecha):
-        #fechaPoner=datetime.strptime(fecha,'%Y-%m-%d').date()
+        if photo_id==0:
+            abort(400,message="El id 0, está reservado, porfavor usar otro")
         apod = nasa.picture_of_the_day(fecha, hd=True)
         codigo=204
         if apod["media_type"] == "image":
@@ -74,17 +91,22 @@ class Photo(Resource):
                 photo=PhotoModel(id=photo_id,explanation=apod["explanation"],hdurl=apod["hdurl"],title=apod["title"],url=apod["url"])
                 db.session.add(photo)
                 db.session.commit()
-                print(photo)
         else:
             codigo=404
 
-        return codigo
+        return photo
     def delete(self,photo_id):
-        PhotoModel.query.filter_by(id=photo_id).delete()
+        resultado=PhotoModel.query.filter_by(id=photo_id).first()
+        if not resultado:
+            abort(404,message="La imagen no existe.")
+        else:
+            PhotoModel.query.filter_by(id=photo_id).delete()
         db.session.commit()
-        return 204
+        return {},204
     @marshal_with(resource_fields)
     def patch(self,photo_id):
+        if photo_id==0:
+            abort(400,message="El id 0, está reservado, porfavor usar otro")
         body=photo_update_args.parse_args()
         resultado=PhotoModel.query.filter_by(id=photo_id).first()
         if not resultado:
@@ -92,11 +114,19 @@ class Photo(Resource):
         else:
            for i in body:
                if body[i] is not None:
-                   resultado.i=i
+                   if i=='title':
+                        resultado.title=body[i]
+                   elif i=='explanation':
+                        resultado.explanation=body[i]
+                   elif i=='hdurl':
+                        resultado.hdurl=body[i]
+                   elif i=='url':
+                        resultado.url=body[i]
         db.session.commit()
-        return resultado     
+        return resultado  
+api.add_resource(Photo, "/put_photo_create/<int:photo_id>/",endpoint='/put_photo_create')   
 api.add_resource(Photo, "/put_photo/<int:photo_id>/<string:fecha>",endpoint='/put_photo')
-api.add_resource(Photo, "/get_photo/<int:photo_id>/") 
+api.add_resource(Photo, "/get_photo/<int:photo_id>/",endpoint='/get_photo') 
 api.add_resource(Photo, "/delete_photo/<int:photo_id>/",endpoint='/delete_photo')
 api.add_resource(Photo, "/update_photo/<int:photo_id>/",endpoint='/update_photo')
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+from turtle import title
 import requests
 from datetime import datetime
 import pandas as pd
@@ -14,6 +15,7 @@ def poblarbase():
 def poblarbaseUNO(id):
         i=fechas[id]
         formatofecha= str(i).split()
+        print(formatofecha[0])
         url=BASE+"put_photo/"+str(id)+"/"+formatofecha[0]
         response=requests.put(url)
 def getbase(idP):
@@ -28,9 +30,10 @@ def deletebase(idP):
     print(respuesta)
 def updatebase(idP):
     id=str(idP)
-    response=requests.delete(BASE+"delete_photo/"+id)
+    response=requests.patch(BASE+"update_photo/"+id,{"title": "la revelacion "})
     respuesta=response.json()
     print(respuesta)
 #poblarbaseUNO(1)
-getbase(1)
+#getbase(1)
+#updatebase(1)
 #deletebase(1)
