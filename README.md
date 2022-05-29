@@ -66,3 +66,6 @@ ejemplo
 http://127.0.0.1:5000//get_photo/0?filter=explanation&filter_value=Orion&limit=5
 
 De esta forma, cumpliendo con todos los requisitos del reto, muchas gracias.
+
+VIDEO CON DEMOSTRACIÓN DEL FUNCIONAMIENTO:
+https://1drv.ms/u/s!Ansti9z59tFjmVNI7g1d_Tx2Nypo    
